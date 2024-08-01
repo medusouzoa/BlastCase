@@ -1,9 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Enum;
 using DefaultNamespace;
+using Enum;
 using Vo;
 
 public class Board : MonoBehaviour
@@ -46,17 +47,21 @@ public class Board : MonoBehaviour
         {
             for (int x = 0; x < _width; x++)
             {
-                ColorType tileColor = (ColorType)Random.Range(0, 6);
+                ColorType tileColor = (ColorType)UnityEngine.Random.Range(0, 6);
                 SpawnNewTile(x, y, tileColor);
             }
         }
 
-        FindAllMatchingGroups();
+        if (!FindAllMatchingGroups())
+        {
+            ShuffleBoard();
+        }
     }
 
     private void SpawnNewTile(int x, int y, ColorType color, bool isObstacle = false)
     {
-        GameTile newGameTile = Instantiate(_tilePrefab, GetWorldPosition(x, y), Quaternion.identity, transform);
+        GameTile newGameTile = Instantiate(_tilePrefab, GetWorldPosition(x, y),
+            Quaternion.identity, transform);
         newGameTile.Init(x, y, this, color, isObstacle);
         _tiles[x, y] = newGameTile;
     }
@@ -69,7 +74,8 @@ public class Board : MonoBehaviour
 
     public void HandleTileClick(GameTile gameTile)
     {
-        List<GameTile> matchingTiles = _matchingGroups.FirstOrDefault(group => group.Contains(gameTile));
+        List<GameTile> matchingTiles = _matchingGroups
+            .FirstOrDefault(group => group.Contains(gameTile));
         if (matchingTiles != null && matchingTiles.Count > 0)
         {
             BlastTiles(matchingTiles);
@@ -86,7 +92,7 @@ public class Board : MonoBehaviour
             }
             else
             {
-                Destroy(tile.gameObject);
+                tile.BlastEffect();
                 _tiles[tile.X, tile.Y] = null;
             }
         }
@@ -97,21 +103,29 @@ public class Board : MonoBehaviour
 
     private IEnumerator FillBoard()
     {
-        bool tilesMoved;
+        yield return StartCoroutine(MoveTilesDown());
 
+        CreateNewTilesAtTop();
+
+        if (!FindAllMatchingGroups())
+        {
+            ShuffleBoard();
+        }
+    }
+
+    private IEnumerator MoveTilesDown()
+    {
+        bool tilesMoved;
         do
         {
             tilesMoved = false;
             for (int x = 0; x < _width; x++)
             {
-                for (int y = 1; y < _height; y++)
+                for (int y = _height - 2; y >= 0; y--)
                 {
-                    if (_tiles[x, y] != null && _tiles[x, y - 1] == null)
+                    if (_tiles[x, y] != null && _tiles[x, y + 1] == null)
                     {
-                        _tiles[x, y].transform.position = GetWorldPosition(x, y - 1);
-                        _tiles[x, y - 1] = _tiles[x, y];
-                        _tiles[x, y] = null;
-                        _tiles[x, y - 1].Y = y - 1; // Update Y position in the tile
+                        MoveTileDown(x, y);
                         tilesMoved = true;
                     }
                 }
@@ -119,22 +133,31 @@ public class Board : MonoBehaviour
 
             yield return new WaitForSeconds(_fillTime);
         } while (tilesMoved);
+    }
 
+    private void MoveTileDown(int x, int y)
+    {
+        _tiles[x, y].transform.position = GetWorldPosition(x, y + 1);
+        _tiles[x, y + 1] = _tiles[x, y];
+        _tiles[x, y] = null;
+        _tiles[x, y + 1].Y = y + 1; // Update Y position in the tile
+    }
+
+    private void CreateNewTilesAtTop()
+    {
         for (int x = 0; x < _width; x++)
         {
             for (int y = 0; y < _height; y++)
             {
                 if (_tiles[x, y] == null)
                 {
-                    SpawnNewTile(x, y, (ColorType)Random.Range(0, 6));
+                    SpawnNewTile(x, y, (ColorType)UnityEngine.Random.Range(0, 6));
                 }
             }
         }
-
-        FindAllMatchingGroups();
     }
 
-    private void FindAllMatchingGroups()
+    private bool FindAllMatchingGroups()
     {
         _matchingGroups.Clear();
 
@@ -143,7 +166,8 @@ public class Board : MonoBehaviour
             for (int x = 0; x < _width; x++)
             {
                 GameTile currentGameTile = _tiles[x, y];
-                if (currentGameTile != null && !_matchingGroups.Any(group => group.Contains(currentGameTile)))
+                if (currentGameTile != null && !_matchingGroups
+                        .Any(group => group.Contains(currentGameTile)))
                 {
                     List<GameTile> matchingTiles = FindMatchingTiles(currentGameTile);
                     if (matchingTiles.Count >= 2)
@@ -154,15 +178,7 @@ public class Board : MonoBehaviour
             }
         }
 
-        // Update icons based on group size
-        foreach (List<GameTile> group in _matchingGroups)
-        {
-            ItemType iconType = DetermineIconType(group.Count);
-            foreach (var tile in group)
-            {
-                tile.UpdateIcon(iconType);
-            }
-        }
+        return _matchingGroups.Count > 0;
     }
 
     private List<GameTile> FindMatchingTiles(GameTile gameTile)
@@ -190,6 +206,15 @@ public class Board : MonoBehaviour
             }
         }
 
+        foreach (var group in _matchingGroups)
+        {
+            ItemType iconType = DetermineIconType(group.Count);
+            foreach (var tile in group)
+            {
+                tile.UpdateIcon(iconType);
+            }
+        }
+
         return matchingTiles;
     }
 
@@ -205,9 +230,18 @@ public class Board : MonoBehaviour
         return neighbors;
     }
 
+    public void TileDestroyed(int x, int y)
+    {
+        _tiles[x, y] = null;
+    }
+
+    private bool IsDeadlock()
+    {
+        return !FindAllMatchingGroups();
+    }
+
     private ItemType DetermineIconType(int groupSize)
     {
-        // Change these thresholds based on your game design
         const int thresholdA = 4;
         const int thresholdB = 7;
         const int thresholdC = 9;
@@ -218,8 +252,46 @@ public class Board : MonoBehaviour
         return ItemType.Default;
     }
 
-    public void TileDestroyed(int x, int y)
+    private void ShuffleBoard()
     {
-        _tiles[x, y] = null;
+        List<GameTile> tiles = new List<GameTile>();
+
+        for (int y = 0; y < _height; y++)
+        {
+            for (int x = 0; x < _width; x++)
+            {
+                if (_tiles[x, y] != null)
+                {
+                    tiles.Add(_tiles[x, y]);
+                    _tiles[x, y] = null;
+                }
+            }
+        }
+
+        System.Random randomRange = new System.Random();
+        tiles = tiles.OrderBy(a => randomRange.Next()).ToList();
+
+        // Place shuffled tiles back on the board
+        int index = 0;
+        for (int y = 0; y < _height; y++)
+        {
+            for (int x = 0; x < _width; x++)
+            {
+                if (index < tiles.Count)
+                {
+                    _tiles[x, y] = tiles[index];
+                    _tiles[x, y].transform.position = GetWorldPosition(x, y);
+                    _tiles[x, y].X = x;
+                    _tiles[x, y].Y = y;
+                    index++;
+                }
+            }
+        }
+
+        // If still in deadlock after shuffling, shuffle again
+        if (IsDeadlock())
+        {
+            ShuffleBoard();
+        }
     }
 }
