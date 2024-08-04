@@ -20,3 +20,6 @@ BlastCase is a tile-matching game with a collapse/blast mechanic. Players match 
 - Gravity Effect: After removal, blocks above fall to fill empty spaces. Extra blocks are created outside the board and drop into columns as needed.
 - Icon Display: Icons on blocks change based on the total number of blocks in the group.
 - Obstacles: Fixed obstacles with 2 health points affect gameplay and do not fall.
+
+# Game Visuals
+You can find the game visuals under the "Recordings" folder.
