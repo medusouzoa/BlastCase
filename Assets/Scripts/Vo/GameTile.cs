@@ -50,7 +50,8 @@ namespace Vo
         {
             if (blastParticlePrefab != null)
             {
-                GameObject particleInstance = Instantiate(blastParticlePrefab, transform.position, Quaternion.identity);
+                GameObject particleInstance = Instantiate(blastParticlePrefab,
+                    transform.position, Quaternion.identity);
                 var blastParticles = particleInstance.GetComponent<ParticleSystem>();
 
                 if (blastParticles != null)

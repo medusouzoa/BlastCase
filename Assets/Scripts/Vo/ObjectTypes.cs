@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace DefaultNamespace
+namespace Vo
 {
     [CreateAssetMenu(fileName = "NewObjectType", menuName = "ScriptableObjects/ObjectType", order = 1)]
     public class ObjectTypes : ScriptableObject
