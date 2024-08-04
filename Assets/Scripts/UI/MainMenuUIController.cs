@@ -7,7 +7,7 @@ namespace UI
     {
         public void OpenGameScene()
         {
-            SceneManager.LoadScene("Scenes/GameScene");
+            SceneManager.LoadScene("Scenes/ObstacleGameScene");
         }
     }
 }

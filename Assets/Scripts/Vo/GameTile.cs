@@ -12,9 +12,10 @@ namespace Vo
         public bool IsObstacle { get; set; }
 
         private Board _board;
+        private int _health = 2;
         [SerializeField] private GameObject blastParticlePrefab;
         private SpriteRenderer _spriteRenderer;
-        private int _health = 2;
+
 
         public void Init(int x, int y, Board board, ColorType color, bool isObstacle = false)
         {
@@ -24,7 +25,14 @@ namespace Vo
             Color = color;
             IsObstacle = isObstacle;
             _spriteRenderer = GetComponent<SpriteRenderer>();
-            UpdateSprite(ItemType.Default);
+            if (!isObstacle)
+            {
+                UpdateSprite(ItemType.Default);
+            }
+            else
+            {
+                UpdateSprite(_health);
+            }
         }
 
         private void UpdateSprite(ItemType itemType)
@@ -37,17 +45,6 @@ namespace Vo
             _board.HandleTileClick(this);
         }
 
-        public void ApplyDamage()
-        {
-            if (IsObstacle)
-            {
-                _health--;
-                if (_health <= 0)
-                {
-                    Destroy(gameObject);
-                }
-            }
-        }
 
         public void BlastEffect()
         {
@@ -92,10 +89,24 @@ namespace Vo
             Destroy(gameObject);
         }
 
+        public void ApplyDamage()
+        {
+            _health--;
+            UpdateSprite(_health);
+            if (_health <= 0)
+            {
+                Destroy(gameObject);
+            }
+        }
 
         public void UpdateIcon(ItemType itemType)
         {
             UpdateSprite(itemType);
+        }
+
+        private void UpdateSprite(int health)
+        {
+            _spriteRenderer.sprite = _board.ObjectTypes.GetSpriteForBox(health);
         }
 
         private Color GetParticleColor(ColorType colorType)

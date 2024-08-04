@@ -5,11 +5,13 @@ namespace Enum
     [Serializable]
     public enum ColorType
     {
-       Blue,
-       Green,
-       Pink,
-       Purple,
-       Red,
-       Yellow
+        None,
+        Blue,
+        Green,
+        Pink,
+        Purple,
+        Red,
+        Yellow,
+        Default
     }
 }
