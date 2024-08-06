@@ -22,4 +22,9 @@ BlastCase is a tile-matching game with a collapse/blast mechanic. Players match 
 - Obstacles: Fixed obstacles with 2 health points affect gameplay and do not fall.
 
 # Game Visuals
-You can find the game visuals under the "Recordings" folder.
+
+![Screenshot_7](https://github.com/user-attachments/assets/74358e82-3a1a-430d-a116-564d10f68932)
+
+- Gameplay Video: 
+https://github.com/user-attachments/assets/069b34a6-f9e1-4f9e-b17e-da54fe5378e0
+
