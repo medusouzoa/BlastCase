@@ -1,0 +1,132 @@
+{
+    "dialogues": [
+        {
+            "id": 1,
+            "speaker": "Detective",
+            "text": "Sorguya başla",
+            "choices": [
+                {
+                    "choiceText": "Olay gecesi neredeydiniz?",
+                    "nextDialogueId": 2
+                },
+                {
+                    "choiceText": "Onu en son ne zaman gördünüz?",
+                    "nextDialogueId": 5
+                },
+                {
+                    "choiceText": "Eşinizle aranız nasıldı?",
+                    "nextDialogueId": 6
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "speaker": "Husband",
+            "text": "Evdeydim... Tek başıma. Birkaç içki içtim ve sonra uyuyakalmışım. Ne zaman uyuduğumu bile hatırlamıyorum.",
+            "nextDialogueId": 3
+        },
+        {
+            "id": 3,
+            "speaker": "Detective",
+            "text": " Bu durumu teyit edebilecek biri var mı? Komşularınız ya da arkadaşlarınız?",
+            "nextDialogueId": 4
+        },
+        {
+            "id": 4,
+            "speaker": "Husband",
+            "text": " Hayır, kimse yoktu.",
+            "nextDialogueId": 9
+        },
+        {
+            "id": 5,
+            "speaker": "Husband",
+            "text": "Olaydan önceki geceydi. Birlikte uyuduk. Sabah kalktığımda da çoktan gitmişti.",
+            "choices": [
+                {
+                    "choiceText": "Olay gecesi neredeydiniz?",
+                    "nextDialogueId": 2
+                },
+                {
+                    "choiceText": "Eşinizle aranız nasıldı?",
+                    "nextDialogueId": 6
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "speaker": "Husband",
+            "text": " İnişli çıkışlıydı diyebilirim. Onu çok seviyordum ama bazen birbirimize ulaşmak zor oluyordu. İşleri yüzünden sürekli meşguldü, ben de... bazı hatalar yaptım.",
+            "nextDialogueId": 7
+        },
+        {
+            "id": 7,
+            "speaker": "Detective",
+            "text": " Ne tür hatalar?",
+            "nextDialogueId": 8
+        },
+        {
+            "id": 8,
+            "speaker": "Husband",
+            "text": "Alkol... Bazen kontrolümü kaybediyordum. Bu da aramızdaki mesafeyi arttırdı sanırım.",
+            "choices": [
+                {
+                    "choiceText": "Olay gecesi neredeydiniz?",
+                    "nextDialogueId": 2
+                },
+                {
+                    "choiceText": "Onu en son ne zaman gördünüz?",
+                    "nextDialogueId": 5
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "speaker": "Detective",
+            "text": "Sorguya Devam Edelim",
+            "choices": [
+                {
+                    "choiceText": "Sizin alkol sorununuz Leyla Hanım'la ilişkinizi nasıl etkiledi?",
+                    "nextDialogueId": 10
+                },
+                {
+                    "choiceText": "Son zamanlarda evinizde tuhaf bir şeyler fark ettiniz mi? Örneğin, yabancı birini gördünüz mü?",
+                    "nextDialogueId": 13
+                }
+            ]
+        },
+        {
+            "id": 10,
+            "speaker": "Husband",
+            "text": "İtiraf etmeliyim ki, iyi etkilemedi. Alkolü fazla kaçırdığım zamanlarda tartışmalarımız olurdu. Ama asla ona zarar vermedim! Sadece... kendimi kontrol etmekte zorlanıyordum.",
+            "nextDialogueId": 11
+        },
+        {
+            "id": 11,
+            "speaker": "Detective",
+            "text": " Peki, bu tartışmalar şiddetli miydi? Komşularınızın duyabileceği kadar yüksek sesli?",
+            "nextDialogueId": 12
+        },
+        {
+            "id": 12,
+            "speaker": "Husband",
+            "text": " Bazen sesler yükselirdi, ama genelde kısa sürerdi. Sonra pişman olur, özür dilerdim. Leyla beni anlamaya çalışırdı, ama biliyorum ki ona zor zamanlar yaşattım.",
+        },
+        {
+            "id": 13,
+            "speaker": "Husband",
+            "text": "Aslında evet. Geçen hafta evimizin yakınlarında siyah bir araba fark ettim. Sanki bizi izliyordu. Başta önemsemedim ama şimdi düşündüğümde garip geliyor.",
+            "nextDialogueId": 14
+        },
+        {
+            "id": 14,
+            "speaker": "Detective",
+            "text": "Arabanın plakasını ya da içindeki kişileri tarif edebilir misiniz?",
+            "nextDialogueId": 15
+        },
+        {
+            "id": 15,
+            "speaker": "Husband",
+            "text": "Plakayı tam göremedim, ama araba siyah bir sedandı.Hava karanlıktı, yüzlerini net seçemedim. Birkaç kez mahallede gördüm ama sonra kayboldu."
+        }
+    ]
+}

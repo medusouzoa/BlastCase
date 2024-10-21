@@ -1,0 +1,66 @@
+{
+    "dialogues": [
+        {
+            "id": 1,
+            "speaker": "Amir",
+            "text": "Adli tıp raporu elimize ulaştı. Leyla Karaca’nın ölüm sebebi tam olarak belirlenmiş. Ancak rapor düşündüğümüzden biraz daha karmaşık.",
+            "nextDialogueId": 2
+        },
+        {
+            "id": 2,
+            "speaker": "Detective",
+            "text": "Karmaşık mı? Ne demek istiyorsunuz amirim? Kocanın bir şekilde işin içinde olup olmadığını öğrenebildik mi?",
+            "nextDialogueId": 3
+        },
+        {
+            "id": 3,
+            "speaker": "Amir",
+            "text": "Rapor, fiziksel bir saldırı izine rastlanmadığını söylüyor. Yani koca, fiziksel olarak onu öldürmemiş gibi görünüyor. Ancak Leyla'nın kanında yüksek miktarda bir toksin bulunmuş. Bu, son derece nadir ve zor tespit edilen bir zehir.",
+            "nextDialogueId": 4
+        },
+        {
+            "id": 4,
+            "speaker": "Detective",
+            "text": "Zehir mi? Yani bu bir cinayet planı mıydı? Peki bu zehir nasıl verilmiş olabilir? Kocanın haberi olabilir mi?",
+            "nextDialogueId": 5
+        },
+        {
+            "id": 5,
+            "speaker": "Amir",
+            "text": "Koca masum olabilir. Zehirin vücuda alınış şekli konusunda henüz kesin bir bilgi yok. Fakat bu zehir, profesyonel bir elden çıkmış gibi görünüyor. Leyla'nın devletle olan bağlantılarını göz önünde bulundurarak, işin arkasında daha büyük bir oyun olabilir.",
+            "choices": [
+                {
+                    "choiceText": "Kocadan tamamen şüphelenmeyi bırakmalı mıyız?",
+                    "nextDialogueId": 6
+                },
+                {
+                    "choiceText": "Bu zehir devlet projesiyle ilgili olabilir mi?",
+                    "nextDialogueId": 7
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "speaker": "Amir",
+            "text": "Tamamen masum diyemem. Bu işin içinde başka bir şeyler var. Koca bilerek ya da bilmeyerek bu cinayete alet olmuş olabilir. Görgü tanıklarının ifadelerine ve otopsiden gelecek ek raporlara bakmadan kesin bir şey söylemek zor.",
+            "nextDialogueId": 8
+        },
+        {
+            "id": 7,
+            "speaker": "Amir",
+            "text": "Kesinlikle bir ihtimal. Bu tip zehirler, sıradan biri tarafından kolayca temin edilebilecek şeyler değil. Leyla'nın çalıştığı proje birilerini tehdit etmiş olabilir. Bu yüzden hedef alındığını düşünüyorum.",
+            "nextDialogueId": 8
+        },
+        {
+            "id": 8,
+            "speaker": "Detective",
+            "text": "Yani, Leyla'nın ölümü basit bir aile içi mesele olmayabilir. Koca işin içinde olsa bile, onu kullanmış olabilirler. Ama kimin ve neden yaptığını öğrenmemiz gerek.",
+            "nextDialogueId": 9
+        },
+        {
+            "id": 9,
+            "speaker": "Amir",
+            "text": "Doğru. Şimdilik kocayı gözden çıkarmayalım, ama asıl soru devletin derinlerinde yatıyor olabilir. Görgü tanıkları ve ek delillerle ilerleyelim. Kocayı takip etmeye devam edin, ama gözümüz devlet bağlantılarında olsun."
+        }
+    ]
+}

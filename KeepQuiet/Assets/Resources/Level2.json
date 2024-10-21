@@ -1,0 +1,60 @@
+{
+    "dialogues": [
+        {
+            "id": 1,
+            "speaker": "Detective",
+            "text": "Amirim, bu Leyla Karaca cinayeti göründüğünden daha karmaşık. Siyah bir araba fark edilmiş, bizi izliyor olabilirler. Olayın basit bir aile içi şiddet vakası olduğuna emin değilim.",
+            "nextDialogueId": 2
+        },
+        {
+            "id": 2,
+            "speaker": "Amir",
+            "text": "Sana söylemiştim. Bu dava sadece sıradan bir cinayet değil. Leyla devletin önemli bir projesinde çalışıyordu. Bu yüzden dikkatli olmalısın. Üstten baskı var, bu olayı bir an önce çözmemiz gerek.",
+            "nextDialogueId": 3
+        },
+        {
+            "id": 3,
+            "speaker": "Detective",
+            "text": "Anlıyorum, ama elimizde hala çok fazla bilinmeyen var. Eşi alkol problemi olduğunu kabul etti ama tam olarak güvenilir değil. Olay gecesi yalnız olduğunu söylüyor.",
+            "nextDialogueId": 4
+        },
+        {
+            "id": 4,
+            "speaker": "Amir",
+            "text": "Eşi şüpheli olabilir, ama daha fazlası var. Eğer bu işin arkasında devlet bağlantıları varsa, çok dikkatli olmalıyız. Siyah arabayı göz ardı etme, araştır. Ama dediğim gibi, fazla derinlere inme. Üsttekiler fazla rahatsız olabilir.",
+            "choices": [
+                {
+                    "choiceText": "Anlaşıldı amirim, dikkatli olacağım.",
+                    "nextDialogueId": 5
+                },
+                {
+                    "choiceText": "Bu baskı neyle ilgili? Neden bu kadar acele ediyoruz?",
+                    "nextDialogueId": 6
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "speaker": "Detective",
+            "text": "Anlaşıldı amirim, dikkatli olacağım. Ama bu işin ucunun nereye dokunduğunu anlamadan dosyayı kapatmak istemiyorum.",
+            "nextDialogueId": 7
+        },
+        {
+            "id": 6,
+            "speaker": "Amir",
+            "text": "Bazı sırların açığa çıkması istenmiyor. Bu yüzden acelemiz var. Şimdilik sadece davayı çözmeye odaklan. Eğer başka bir şey bulursan, önce bana bildir.",
+            "nextDialogueId": 7
+        },
+        {
+            "id": 7,
+            "speaker": "Detective",
+            "text": "Peki amirim. Ama bir gariplik var. Siyah araba, Leyla’nın devlet projesi, eşinin çelişkili ifadesi... Bunlar sıradan şeyler değil.",
+            "nextDialogueId": 8
+        },
+        {
+            "id": 8,
+            "speaker": "Amir",
+            "text": "Dedektif, ipin ucunu fazla çekme. Bizim işimiz doğru soruları sormak ve doğru cevapları bulmak. Devletle ilgili bağlantıları öğrendiğinde, beni hemen bilgilendir. Şimdi işine dön."
+        }
+    ]
+}
