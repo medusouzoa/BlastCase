@@ -1,0 +1,35 @@
+{
+    "rules": {
+        "height": 7,
+        "width": 7,
+        "thresholdA": 3,
+        "thresholdB": 5,
+        "thresholdC": 7,
+        "obstacleCount": 4,
+        "moveLimit": 30,
+        "colors": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "obstacleCoordinates": [
+            {
+                "x": 2,
+                "y": 3
+            },
+            {
+                "x": 5,
+                "y": 6
+            },
+            {
+                "x": 5,
+                "y": 1
+            },
+            {
+                "x": 4,
+                "y": 4
+            }
+        ]
+    }
+}

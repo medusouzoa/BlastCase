@@ -14,64 +14,56 @@ public class Board : MonoBehaviour
     [SerializeField] private GameTile _tilePrefab;
     [SerializeField] private ObjectTypes _objectTypes;
 
-    [Header("Rules")] [SerializeField] private int _height;
+    [Header("Rules")][SerializeField] private int _height;
     [SerializeField] private int _width;
     [SerializeField] private int thresholdA;
     [SerializeField] private int thresholdB;
     [SerializeField] private int thresholdC;
     [SerializeField] private int obstacleCount;
+    [SerializeField] private int moveLimit;
     [SerializeField] private ColorType[] _colors;
     public ObjectTypes ObjectTypes => _objectTypes;
     private GameTile[,] _tiles;
     private List<List<GameTile>> _matchingGroups;
     private HashSet<Vector2Int> _obstacleCoordinates;
 
+    private int movesMade;
     private void Start()
     {
-        GenerateObstacleCoordinates();
-        SelectColors();
+        LoadBoardConfiguration();
         Setup();
         InitializeBoard();
         CameraController.Instance.AdjustCameraSize(_height, _width);
     }
-
-    private void GenerateObstacleCoordinates()
+    private void LoadBoardConfiguration()
     {
-        _obstacleCoordinates = new HashSet<Vector2Int>();
-        while (_obstacleCoordinates.Count < obstacleCount)
+        TextAsset jsonFile = Resources.Load<TextAsset>("Level10");
+        if (jsonFile != null)
         {
-            int x = UnityEngine.Random.Range(0, _width);
-            int y = UnityEngine.Random.Range(0, _height);
-            _obstacleCoordinates.Add(new Vector2Int(x, y));
-        }
-    }
+            string jsonContent = jsonFile.text;
+            RulesData rulesData = JsonUtility.FromJson<RulesData>(jsonContent);
 
-    private void SelectColors()
-    {
-        if (_colors.Length == 6)
-        {
-            ColorType[] fullColors =
+            // Load values from JSON into the script's variables
+            _height = rulesData.rules.height;
+            _width = rulesData.rules.width;
+            thresholdA = rulesData.rules.thresholdA;
+            thresholdB = rulesData.rules.thresholdB;
+            thresholdC = rulesData.rules.thresholdC;
+            obstacleCount = rulesData.rules.obstacleCount;
+            moveLimit = rulesData.rules.moveLimit;
+            GameUIController.instance.SetMoveText(moveLimit);
+            _colors = rulesData.rules.colors;
+
+            _obstacleCoordinates = new HashSet<Vector2Int>();
+            foreach (var coord in rulesData.rules.obstacleCoordinates)
             {
-                ColorType.Blue, ColorType.Green, ColorType.Pink, ColorType.Purple,
-                ColorType.Red, ColorType.Yellow
-            };
-            _colors = fullColors;
+                _obstacleCoordinates.Add(new Vector2Int(coord.x, coord.y));
+            }
+            Debug.Log("Successfully set.");
         }
         else
         {
-            for (int i = 0; i < _colors.Length; i++)
-            {
-                ColorType colorType = (ColorType)UnityEngine.Random.Range(0, 6);
-                Debug.Log(colorType);
-                if (_colors.Length == 0 || !_colors.Contains(colorType))
-                {
-                    _colors[i] = colorType;
-                }
-                else
-                {
-                    i--;
-                }
-            }
+            Debug.LogError("Failed to load rules.json from Resources folder!");
         }
     }
 
@@ -133,6 +125,8 @@ public class Board : MonoBehaviour
         if (matchingTiles != null && matchingTiles.Count > 0)
         {
             BlastTiles(matchingTiles);
+            moveLimit--;
+            GameUIController.instance.SetMoveText(moveLimit);
         }
     }
 
