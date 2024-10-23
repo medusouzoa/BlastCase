@@ -6,12 +6,14 @@ using Camera;
 using UnityEngine;
 using Enum;
 using Vo;
+using System.Drawing;
 
 public class Board : MonoBehaviour
 {
     [SerializeField] private float _fillTime;
     [SerializeField] private GameObject _background;
     [SerializeField] private GameTile _tilePrefab;
+    [SerializeField] private GameTile _tilebPrefab;
     [SerializeField] private ObjectTypes _objectTypes;
 
     [Header("Rules")][SerializeField] private int _height;
@@ -26,24 +28,53 @@ public class Board : MonoBehaviour
     private GameTile[,] _tiles;
     private List<List<GameTile>> _matchingGroups;
     private HashSet<Vector2Int> _obstacleCoordinates;
+    private WinCondition winCondition;
 
     private int movesMade;
     private void Start()
     {
+        //CheckWinCondition();
         LoadBoardConfiguration();
         Setup();
         InitializeBoard();
         CameraController.Instance.AdjustCameraSize(_height, _width);
     }
+    private void CheckWinCondition()
+    {
+        if (winCondition.destroyAllObstacles && AllObstaclesDestroyed())
+        {
+            Debug.Log("All obstacles destroyed! You win!");
+        }
+
+        foreach (var colorCondition in winCondition.collectColors)
+        {
+            if (CheckColorCollected(colorCondition.color, colorCondition.amount))
+            {
+                Debug.Log($"Collected {colorCondition.amount} {colorCondition.color} pieces!");
+            }
+        }
+    }
+
+    private bool AllObstaclesDestroyed()
+    {
+        return _obstacleCoordinates.Count == 0;
+    }
+
+    private bool CheckColorCollected(string color, int requiredAmount)
+    {
+        // Logic to count how many pieces of a specific color are collected
+        // This would depend on how you're tracking collected pieces in the game
+        return false; // Placeholder
+    }
+
     private void LoadBoardConfiguration()
     {
-        TextAsset jsonFile = Resources.Load<TextAsset>("Level10");
+        TextAsset jsonFile = Resources.Load<TextAsset>("Level4");
         if (jsonFile != null)
         {
             string jsonContent = jsonFile.text;
             RulesData rulesData = JsonUtility.FromJson<RulesData>(jsonContent);
 
-            // Load values from JSON into the script's variables
             _height = rulesData.rules.height;
             _width = rulesData.rules.width;
             thresholdA = rulesData.rules.thresholdA;
@@ -120,17 +151,24 @@ public class Board : MonoBehaviour
 
     public void HandleTileClick(GameTile gameTile)
     {
-        List<GameTile> matchingTiles = _matchingGroups
-            .FirstOrDefault(group => group.Contains(gameTile));
-        if (matchingTiles != null && matchingTiles.Count > 0)
+        if (gameTile.IsBomb)
         {
-            BlastTiles(matchingTiles);
-            moveLimit--;
-            GameUIController.instance.SetMoveText(moveLimit);
+            HandleBombClick(gameTile);
+        }
+        else
+        {
+            List<GameTile> matchingTiles = _matchingGroups.FirstOrDefault(group => group.Contains(gameTile));
+            if (matchingTiles != null && matchingTiles.Count > 0)
+            {
+                BlastTiles(matchingTiles, gameTile);
+                moveLimit--;
+                GameUIController.instance.SetMoveText(moveLimit);
+            }
         }
     }
 
-    private void BlastTiles(List<GameTile> tilesToBlast)
+
+    private void BlastTiles(List<GameTile> tilesToBlast, GameTile clickedTile)
     {
         HashSet<GameTile> damagedObstacles = new HashSet<GameTile>();
         foreach (var tile in tilesToBlast)
@@ -148,9 +186,40 @@ public class Board : MonoBehaviour
             ApplyDamageToAdjacentObstacles(tile, damagedObstacles);
         }
 
+        GameTile bombTile = Instantiate(_tilebPrefab, GetWorldPosition(clickedTile.X, clickedTile.Y), Quaternion.identity, transform);
+        bombTile.Init(clickedTile.X, clickedTile.Y, this, BlastableType.Bomb);
+        _tiles[clickedTile.X, clickedTile.Y] = bombTile;
+
         _matchingGroups.RemoveAll(group => group.Any(tile => tilesToBlast.Contains(tile)));
         StartCoroutine(FillBoard());
     }
+
+    public void HandleBombClick(GameTile bombTile)
+    {
+        List<GameTile> neighbors = GetNeighbors(bombTile);
+        HashSet<GameTile> damagedObstacles = new HashSet<GameTile>();
+
+        foreach (var neighbor in neighbors)
+        {
+            if (neighbor == null) continue;
+
+            if (neighbor.IsObstacle)
+            {
+                neighbor.ApplyDamage();
+                damagedObstacles.Add(neighbor);
+            }
+            else
+            {
+                _tiles[neighbor.X, neighbor.Y] = null;
+            }
+        }
+
+        bombTile.BlastEffect();
+        _tiles[bombTile.X, bombTile.Y] = null;
+
+        StartCoroutine(FillBoard());
+    }
+
 
     private IEnumerator FillBoard()
     {
@@ -232,7 +301,6 @@ public class Board : MonoBehaviour
 
     private void CreateNewTilesAtTop()
     {
-        // Spawn new tile only in the top row
         for (int x = 0; x < _width; x++)
         {
             if (_tiles[x, 0] == null)
@@ -273,7 +341,7 @@ public class Board : MonoBehaviour
             for (int x = 0; x < _width; x++)
             {
                 GameTile currentGameTile = _tiles[x, y];
-                if (currentGameTile != null && !currentGameTile.IsObstacle)
+                if (currentGameTile != null && !currentGameTile.IsObstacle && !currentGameTile.IsBomb)
                 {
                     currentGameTile.UpdateIcon(ItemType.Default);
                 }
@@ -290,14 +358,19 @@ public class Board : MonoBehaviour
         while (tilesToCheck.Count > 0)
         {
             GameTile currentGameTile = tilesToCheck.Pop();
-            if (matchingTiles.Contains(currentGameTile) || currentGameTile.IsObstacle) continue;
+
+            if (matchingTiles.Contains(currentGameTile) || currentGameTile.IsBomb || currentGameTile.IsObstacle)
+            {
+                continue;
+            }
+
             matchingTiles.Add(currentGameTile);
 
             List<GameTile> neighbors = GetNeighbors(currentGameTile);
             foreach (GameTile neighbor in neighbors)
             {
                 if (neighbor != null && neighbor.Color == currentGameTile.Color &&
-                    !matchingTiles.Contains(neighbor) && !neighbor.IsObstacle)
+                    !matchingTiles.Contains(neighbor) && !neighbor.IsBomb && !neighbor.IsObstacle)
                 {
                     tilesToCheck.Push(neighbor);
                 }
@@ -348,7 +421,6 @@ public class Board : MonoBehaviour
 
     private void ShuffleBoard()
     {
-        // Swap tiles to solve the deadlock
         bool validSwapFound = false;
         for (int x = 0; x < _width; x++)
         {

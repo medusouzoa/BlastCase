@@ -380,6 +380,7 @@ MonoBehaviour:
   _fillTime: 0.04
   _background: {fileID: 8117264516079029217, guid: 0d70b67167cf7f342a260d57abbd822d, type: 3}
   _tilePrefab: {fileID: 5297737282435282056, guid: 5169c7f006dbd7741be509c38d5a7906, type: 3}
+  _tilebPrefab: {fileID: 5297737282435282056, guid: feafaa2f8a62cc74a98366dffe5510df, type: 3}
   _objectTypes: {fileID: 11400000, guid: f33459baf92a0814b8fc37fdb1dbf0e3, type: 2}
   _height: 7
   _width: 7

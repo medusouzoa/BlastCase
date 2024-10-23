@@ -90,3 +90,10 @@ MonoBehaviour:
     health: 2
   - pieceSprite: {fileID: 21300000, guid: af43045659eae364a81f81d66e13f158, type: 3}
     health: 1
+  blastableObjects:
+  - pieceSprite: {fileID: 21300000, guid: 6daadb1dde723484f9ecee9a7c1b53ca, type: 3}
+    type: 0
+  - pieceSprite: {fileID: 21300000, guid: 165c5315a95805e4caaa96893131c394, type: 3}
+    type: 1
+  - pieceSprite: {fileID: 21300000, guid: d7caa61eb16b1d64b81e3aa7db8dea58, type: 3}
+    type: 2

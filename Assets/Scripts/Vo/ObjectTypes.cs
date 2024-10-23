@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Enum;
+using System;
 using System.Linq;
 using UnityEngine;
 
@@ -16,6 +17,7 @@ namespace Vo
 
         public ColoredObject[] coloredObjects;
         public BoxObject[] boxObjects;
+        public BlastableObject[] blastableObjects;
 
         [Serializable]
         public class ColoredObject
@@ -31,23 +33,36 @@ namespace Vo
             public Sprite pieceSprite;
             public int health;
         }
-
+        [Serializable]
+        public class BlastableObject
+        {
+            public Sprite pieceSprite;
+            public BlastableType type;
+        }
         public Sprite GetSpriteForColor(int colorValue, int typeValue)
         {
             return (from pair in coloredObjects
-                where
-                    pair.color == colorValue && pair.type == typeValue
-                select
-                    pair.pieceSprite).FirstOrDefault();
+                    where
+                        pair.color == colorValue && pair.type == typeValue
+                    select
+                        pair.pieceSprite).FirstOrDefault();
         }
 
         public Sprite GetSpriteForBox(int health)
         {
             return (from pair in boxObjects
-                where
-                    pair.health == health
-                select
-                    pair.pieceSprite).FirstOrDefault();
+                    where
+                        pair.health == health
+                    select
+                        pair.pieceSprite).FirstOrDefault();
+        }
+        public Sprite GetSpriteForType(BlastableType type)
+        {
+            return (from pair in blastableObjects
+                    where
+                        pair.type == type
+                    select
+                        pair.pieceSprite).FirstOrDefault();
         }
     }
 }

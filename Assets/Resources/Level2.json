@@ -25,6 +25,15 @@
                 "x": 3,
                 "y": 3
             }
-        ]
+        ],
+        "winCondition": {
+            "destroyAllObstacles": true,
+            "collectColors": [
+                {
+                    "color": 1,
+                    "amount": 20
+                }
+            ]
+        }
     }
 }

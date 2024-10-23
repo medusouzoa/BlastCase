@@ -10,6 +10,7 @@ namespace Vo
         public int Y { get; set; }
         public ColorType Color { get; set; }
         public bool IsObstacle { get; set; }
+        public bool IsBomb { get; set; }
 
         private Board _board;
         private int _health = 2;
@@ -34,10 +35,23 @@ namespace Vo
                 UpdateSprite(_health);
             }
         }
+        public void Init(int x, int y, Board board, BlastableType type)
+        {
+            X = x;
+            Y = y;
+            _board = board;
+            _spriteRenderer = GetComponent<SpriteRenderer>();
+            IsBomb = true;
+            UpdateType(type);
+        }
 
         private void UpdateSprite(ItemType itemType)
         {
             _spriteRenderer.sprite = _board.ObjectTypes.GetSpriteForColor((int)Color, (int)itemType);
+        }
+        private void UpdateBlastableSprite(BlastableType type)
+        {
+            _spriteRenderer.sprite = _board.ObjectTypes.GetSpriteForType(type);
         }
 
         private void OnMouseDown()
@@ -103,6 +117,10 @@ namespace Vo
         public void UpdateIcon(ItemType itemType)
         {
             UpdateSprite(itemType);
+        }
+        public void UpdateType(BlastableType type)
+        {
+            UpdateBlastableSprite(type);
         }
 
         private void UpdateSprite(int health)
