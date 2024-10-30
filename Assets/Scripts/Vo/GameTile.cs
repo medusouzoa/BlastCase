@@ -11,6 +11,9 @@ namespace Vo
         public ColorType Color { get; set; }
         public bool IsObstacle { get; set; }
         public bool IsBomb { get; set; }
+        public bool IsRocket { get; set; }
+        public bool IsCandy { get; set; }
+
 
         private Board _board;
         private int _health = 2;
@@ -35,13 +38,15 @@ namespace Vo
                 UpdateSprite(_health);
             }
         }
-        public void Init(int x, int y, Board board, BlastableType type)
+        public void Init(int x, int y, Board board, BlastableType type, bool isBomb = false, bool isRocket = false, bool isCandy = false)
         {
             X = x;
             Y = y;
             _board = board;
             _spriteRenderer = GetComponent<SpriteRenderer>();
-            IsBomb = true;
+            IsBomb = isBomb;
+            IsRocket = isRocket;
+            IsCandy = isCandy;
             UpdateType(type);
         }
 

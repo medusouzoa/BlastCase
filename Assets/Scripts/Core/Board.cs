@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,14 +5,15 @@ using Camera;
 using UnityEngine;
 using Enum;
 using Vo;
-using System.Drawing;
 
 public class Board : MonoBehaviour
 {
     [SerializeField] private float _fillTime;
     [SerializeField] private GameObject _background;
     [SerializeField] private GameTile _tilePrefab;
-    [SerializeField] private GameTile _tilebPrefab;
+    [SerializeField] private GameTile _bombPrefab;
+    [SerializeField] private GameTile _rocketPrefab;
+    [SerializeField] private GameTile _candyPrefab;
     [SerializeField] private ObjectTypes _objectTypes;
 
     [Header("Rules")][SerializeField] private int _height;
@@ -24,52 +24,122 @@ public class Board : MonoBehaviour
     [SerializeField] private int obstacleCount;
     [SerializeField] private int moveLimit;
     [SerializeField] private ColorType[] _colors;
+    private List<WinCondition> collectPiecesConditions = new List<WinCondition>();
+
     public ObjectTypes ObjectTypes => _objectTypes;
     private GameTile[,] _tiles;
+    private GameObject[,] _backgroundTiles;
     private List<List<GameTile>> _matchingGroups;
     private HashSet<Vector2Int> _obstacleCoordinates;
-    private WinCondition winCondition;
+    private bool isDestroyAllObstaclesRequired = false;
+
+    private Dictionary<int, int> colorCollectionTargets = new Dictionary<int, int>();
+    private Dictionary<int, int> collectedPieces = new Dictionary<int, int>();
 
     private int movesMade;
+    public static Board Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
     private void Start()
     {
-        //CheckWinCondition();
         LoadBoardConfiguration();
-        Setup();
         InitializeBoard();
         CameraController.Instance.AdjustCameraSize(_height, _width);
     }
-    private void CheckWinCondition()
+    public int GetHeight()
     {
-        if (winCondition.destroyAllObstacles && AllObstaclesDestroyed())
+        return _height;
+    }
+    public int GetWidth()
+    {
+        return _width;
+    }
+    public GameTile GetTileAtPosition(int x, int y)
+    {
+        if (x >= 0 && x < _tiles.GetLength(0) && y >= 0 && y < _tiles.GetLength(1))
         {
-            Debug.Log("All obstacles destroyed! You win!");
+            return _tiles[x, y];
         }
-
-        foreach (var colorCondition in winCondition.collectColors)
+        else
         {
-            if (CheckColorCollected(colorCondition.color, colorCondition.amount))
-            {
-                Debug.Log($"Collected {colorCondition.amount} {colorCondition.color} pieces!");
-            }
+            return null;
         }
     }
+    public Vector3 GetTopWorldPosition(float x)
+    {
+        float tileHeight = _tilePrefab.GetComponent<SpriteRenderer>().bounds.size.y;
 
+        int topRow = _tiles.GetLength(1) - 1;
+
+        Vector3 boardOrigin = transform.position;
+        float worldX = boardOrigin.x + (x * tileHeight);
+        float worldY = boardOrigin.y + (topRow * tileHeight);
+
+        return new Vector3(worldX, worldY, 0);
+    }
+    public Vector3 GetBottomWorldPosition(float x)
+    {
+        float tileHeight = _tilePrefab.GetComponent<SpriteRenderer>().bounds.size.y;
+
+        int bottomRow = 0;
+
+        Vector3 boardOrigin = transform.position;
+        float worldX = boardOrigin.x + (x * tileHeight);
+        float worldY = boardOrigin.y + (bottomRow * tileHeight);
+
+        return new Vector3(worldX, worldY, 0);
+    }
+    public Vector3 GetRightWorldPosition(float y)
+    {
+        float tileWidth = _tilePrefab.GetComponent<SpriteRenderer>().bounds.size.x;
+        int rightColumn = _tiles.GetLength(0) - 1;
+
+        Vector3 boardOrigin = transform.position;
+        float worldX = boardOrigin.x + (rightColumn * tileWidth);
+        float worldY = boardOrigin.y + (y * tileWidth);
+
+        return new Vector3(worldX, worldY, 0);
+    }
+    public Vector3 GetLeftWorldPosition(float y)
+    {
+        float tileWidth = _tilePrefab.GetComponent<SpriteRenderer>().bounds.size.x;
+
+        int leftColumn = 0;
+
+        Vector3 boardOrigin = transform.position;
+        float worldX = boardOrigin.x + (leftColumn * tileWidth);
+        float worldY = boardOrigin.y + (y * tileWidth);
+
+        return new Vector3(worldX, worldY, 0);
+    }
+    public void SetTileNull(int x, int y)
+    {
+        if (x >= 0 && x < _tiles.GetLength(0) && y >= 0 && y < _tiles.GetLength(1))
+        {
+            _tiles[x, y] = null;
+        }
+        else
+        {
+            Debug.LogError($"Invalid tile coordinates: ({x}, {y})");
+        }
+    }
     private bool AllObstaclesDestroyed()
     {
         return _obstacleCoordinates.Count == 0;
     }
-
-    private bool CheckColorCollected(string color, int requiredAmount)
-    {
-        // Logic to count how many pieces of a specific color are collected
-        // This would depend on how you're tracking collected pieces in the game
-        return false; // Placeholder
-    }
-
     private void LoadBoardConfiguration()
     {
-        TextAsset jsonFile = Resources.Load<TextAsset>("Level4");
+        TextAsset jsonFile = Resources.Load<TextAsset>("Level6");
         if (jsonFile != null)
         {
             string jsonContent = jsonFile.text;
@@ -84,12 +154,14 @@ public class Board : MonoBehaviour
             moveLimit = rulesData.rules.moveLimit;
             GameUIController.instance.SetMoveText(moveLimit);
             _colors = rulesData.rules.colors;
-
             _obstacleCoordinates = new HashSet<Vector2Int>();
+            LoadWinConditions(rulesData);
+            GameUIController.instance.SetColorText(colorCollectionTargets);
             foreach (var coord in rulesData.rules.obstacleCoordinates)
             {
                 _obstacleCoordinates.Add(new Vector2Int(coord.x, coord.y));
             }
+
             Debug.Log("Successfully set.");
         }
         else
@@ -97,18 +169,45 @@ public class Board : MonoBehaviour
             Debug.LogError("Failed to load rules.json from Resources folder!");
         }
     }
-
-    private void Setup()
+    private void LoadWinConditions(RulesData rulesData)
     {
-        for (int y = 0; y < _height; y++)
+        collectPiecesConditions.Clear();
+
+        foreach (var condition in rulesData.rules.winConditions)
         {
-            for (int x = 0; x < _width; x++)
+            if (condition.type == "collectPieces")
             {
-                Instantiate(_background, GetWorldPosition(x, y), Quaternion.identity, transform);
+                WinCondition collectCondition = new WinCondition
+                {
+                    type = condition.type,
+                    quantity = condition.quantity,
+                    color = condition.color
+                };
+                Debug.Log(collectCondition.color);
+
+                collectPiecesConditions.Add(collectCondition);
+
+                colorCollectionTargets[collectCondition.color] = collectCondition.quantity;
+                collectedPieces[collectCondition.color] = 0;
+            }
+            else if (condition.type == "destroyAllObstacles")
+            {
+                Debug.Log("Win Condition: Destroy All Obstacles");
+                WinCondition destroyCondition = new WinCondition
+                {
+                    type = condition.type
+                };
+                collectPiecesConditions.Add(destroyCondition);
+                isDestroyAllObstaclesRequired = true;
+
+
+            }
+            else
+            {
+                Debug.LogWarning("Unknown win condition type: " + condition.type);
             }
         }
     }
-
     private void InitializeBoard()
     {
         _tiles = new GameTile[_width, _height];
@@ -155,6 +254,14 @@ public class Board : MonoBehaviour
         {
             HandleBombClick(gameTile);
         }
+        if (gameTile.IsRocket)
+        {
+            HandleRocketClick(gameTile);
+        }
+        if (gameTile.IsCandy)
+        {
+            HandleCandleClick();
+        }
         else
         {
             List<GameTile> matchingTiles = _matchingGroups.FirstOrDefault(group => group.Contains(gameTile));
@@ -166,38 +273,140 @@ public class Board : MonoBehaviour
             }
         }
     }
-
-
     private void BlastTiles(List<GameTile> tilesToBlast, GameTile clickedTile)
     {
         HashSet<GameTile> damagedObstacles = new HashSet<GameTile>();
+        int matchingGroupSize = tilesToBlast.Count;
+        int pieceColor = (int)clickedTile.Color;
+        if (colorCollectionTargets.ContainsKey(pieceColor))
+        {
+            collectedPieces[(int)clickedTile.Color] += matchingGroupSize;
+            int quantity;
+            if (colorCollectionTargets.TryGetValue(pieceColor, out quantity))
+            {
+                
+            }
+            Debug.Log(collectedPieces[(int)clickedTile.Color]);
+        }
         foreach (var tile in tilesToBlast)
         {
             if (tile.IsObstacle)
             {
+                ApplyDamageToAdjacentObstacles(tile, damagedObstacles);
                 continue;
             }
-            else
-            {
-                tile.BlastEffect();
-                _tiles[tile.X, tile.Y] = null;
-            }
 
+            tile.BlastEffect();
+            _tiles[tile.X, tile.Y] = null;
             ApplyDamageToAdjacentObstacles(tile, damagedObstacles);
         }
-
-        GameTile bombTile = Instantiate(_tilebPrefab, GetWorldPosition(clickedTile.X, clickedTile.Y), Quaternion.identity, transform);
-        bombTile.Init(clickedTile.X, clickedTile.Y, this, BlastableType.Bomb);
-        _tiles[clickedTile.X, clickedTile.Y] = bombTile;
-
+        if (thresholdC >= matchingGroupSize && matchingGroupSize > thresholdB)
+        {
+            InstantiateBomb(clickedTile);
+        }
+        else if (matchingGroupSize > thresholdA && matchingGroupSize <= thresholdB)
+        {
+            InstantiateRocket(clickedTile);
+        }
+        else if (matchingGroupSize > thresholdC)
+        {
+            InstantiateCandy(clickedTile);
+        }
         _matchingGroups.RemoveAll(group => group.Any(tile => tilesToBlast.Contains(tile)));
+
+
         StartCoroutine(FillBoard());
     }
-
+    private void InstantiateBomb(GameTile clickedTile)
+    {
+        GameTile bombTile = Instantiate(_bombPrefab, GetWorldPosition(clickedTile.X, clickedTile.Y), Quaternion.identity, transform);
+        bombTile.Init(clickedTile.X, clickedTile.Y, this, BlastableType.Bomb, true, false);
+        _tiles[clickedTile.X, clickedTile.Y] = bombTile;
+    }
+    private void InstantiateRocket(GameTile clickedTile)
+    {
+        GameTile rocketTile = Instantiate(_rocketPrefab, GetWorldPosition(clickedTile.X, clickedTile.Y), Quaternion.identity, transform);
+        rocketTile.Init(clickedTile.X, clickedTile.Y, this, BlastableType.Rocket, false, true);
+        _tiles[clickedTile.X, clickedTile.Y] = rocketTile;
+    }
+    private void InstantiateCandy(GameTile clickedTile)
+    {
+        GameTile candyTile = Instantiate(_candyPrefab, GetWorldPosition(clickedTile.X, clickedTile.Y), Quaternion.identity, transform);
+        candyTile.Init(clickedTile.X, clickedTile.Y, this, BlastableType.Candy, false, false, true);
+        _tiles[clickedTile.X, clickedTile.Y] = candyTile;
+    }
     public void HandleBombClick(GameTile bombTile)
     {
+        HashSet<GameTile> triggeredBombs = new HashSet<GameTile>();
+
+        TriggerBomb(bombTile, triggeredBombs);
+
+        StartCoroutine(FillBoard());
+    }
+    public void HandleRocketClick(GameTile rocketTile)
+    {
+        DestroyLine(new Vector2(rocketTile.X, rocketTile.Y), false);
+        DestroyLine(new Vector2(rocketTile.X, rocketTile.Y), true);
+        StartCoroutine(FillBoard());
+    }
+    public void HandleCandleClick()
+    {
+        for (int x = 0; x < _width; x++)
+        {
+            for (int y = 0; y < _height; y++)
+            {
+                GameTile tile = _tiles[x, y];
+
+                if (tile == null) continue;
+
+                if (tile.IsObstacle)
+                {
+                    tile.ApplyDamage();
+                }
+                else
+                {
+                    tile.BlastEffect();
+                    _tiles[x, y] = null;
+                }
+            }
+        }
+        StartCoroutine(FillBoard());
+    }
+    private void DestroyLine(Vector2 startPosition, bool isVertical)
+    {
+        if (isVertical)
+        {
+            for (int y = 0; y < _height; y++)
+            {
+                GameTile tile = GetTileAtPosition((int)startPosition.x, y);
+                if (tile != null)
+                {
+                    tile.BlastEffect();
+                    SetTileNull((int)startPosition.x, y);
+                }
+            }
+        }
+        else
+        {
+            for (int x = 0; x < _width; x++)
+            {
+                GameTile tile = GetTileAtPosition(x, (int)startPosition.y);
+                if (tile != null)
+                {
+                    tile.BlastEffect();
+                    SetTileNull(x, (int)startPosition.y);
+                }
+            }
+        }
+    }
+    private void TriggerBomb(GameTile bombTile, HashSet<GameTile> triggeredBombs)
+    {
+        if (triggeredBombs.Contains(bombTile)) return;
+        triggeredBombs.Add(bombTile);
+        bombTile.BlastEffect();
+        _tiles[bombTile.X, bombTile.Y] = null;
+
         List<GameTile> neighbors = GetNeighbors(bombTile);
-        HashSet<GameTile> damagedObstacles = new HashSet<GameTile>();
 
         foreach (var neighbor in neighbors)
         {
@@ -206,21 +415,18 @@ public class Board : MonoBehaviour
             if (neighbor.IsObstacle)
             {
                 neighbor.ApplyDamage();
-                damagedObstacles.Add(neighbor);
+            }
+            else if (neighbor.IsBomb)
+            {
+                TriggerBomb(neighbor, triggeredBombs);
             }
             else
             {
                 _tiles[neighbor.X, neighbor.Y] = null;
+                neighbor.BlastEffect();
             }
         }
-
-        bombTile.BlastEffect();
-        _tiles[bombTile.X, bombTile.Y] = null;
-
-        StartCoroutine(FillBoard());
     }
-
-
     private IEnumerator FillBoard()
     {
         bool hasEmptySpaces;
@@ -305,7 +511,7 @@ public class Board : MonoBehaviour
         {
             if (_tiles[x, 0] == null)
             {
-                int index = UnityEngine.Random.Range(0, _colors.Length);
+                int index = Random.Range(0, _colors.Length);
                 SpawnNewTile(x, 0, _colors[index]);
             }
         }
@@ -341,7 +547,8 @@ public class Board : MonoBehaviour
             for (int x = 0; x < _width; x++)
             {
                 GameTile currentGameTile = _tiles[x, y];
-                if (currentGameTile != null && !currentGameTile.IsObstacle && !currentGameTile.IsBomb)
+                if (currentGameTile != null && !currentGameTile.IsObstacle && !currentGameTile.IsBomb
+                    && !currentGameTile.IsRocket && !currentGameTile.IsCandy)
                 {
                     currentGameTile.UpdateIcon(ItemType.Default);
                 }
@@ -359,7 +566,8 @@ public class Board : MonoBehaviour
         {
             GameTile currentGameTile = tilesToCheck.Pop();
 
-            if (matchingTiles.Contains(currentGameTile) || currentGameTile.IsBomb || currentGameTile.IsObstacle)
+            if (matchingTiles.Contains(currentGameTile) || currentGameTile.IsBomb ||
+                currentGameTile.IsObstacle || currentGameTile.IsRocket || currentGameTile.IsCandy)
             {
                 continue;
             }
@@ -397,10 +605,10 @@ public class Board : MonoBehaviour
     {
         List<GameTile> neighbors = new List<GameTile>();
 
-        if (gameTile.X > 0) neighbors.Add(_tiles[gameTile.X - 1, gameTile.Y]); // Left
-        if (gameTile.X < _width - 1) neighbors.Add(_tiles[gameTile.X + 1, gameTile.Y]); // Right
-        if (gameTile.Y > 0) neighbors.Add(_tiles[gameTile.X, gameTile.Y - 1]); // Down
-        if (gameTile.Y < _height - 1) neighbors.Add(_tiles[gameTile.X, gameTile.Y + 1]); // Up
+        if (gameTile.X > 0) neighbors.Add(_tiles[gameTile.X - 1, gameTile.Y]);
+        if (gameTile.X < _width - 1) neighbors.Add(_tiles[gameTile.X + 1, gameTile.Y]);
+        if (gameTile.Y > 0) neighbors.Add(_tiles[gameTile.X, gameTile.Y - 1]);
+        if (gameTile.Y < _height - 1) neighbors.Add(_tiles[gameTile.X, gameTile.Y + 1]);
 
         return neighbors;
     }

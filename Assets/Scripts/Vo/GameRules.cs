@@ -12,6 +12,7 @@ public class GameRules
     public int moveLimit;  // New field for move limit
     public ColorType[] colors;
     public ObstacleCoordinate[] obstacleCoordinates;
+    public WinCondition[] winConditions;
 }
 
 [System.Serializable]

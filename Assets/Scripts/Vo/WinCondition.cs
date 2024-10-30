@@ -1,16 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class WinCondition : MonoBehaviour
-{
-    public bool destroyAllObstacles;
-    public CollectColor[] collectColors;
-}
 
 [System.Serializable]
-public class CollectColor
+public class WinCondition
 {
-    public string color;
-    public int amount;
+    public string type;
+    public int quantity;
+    public int color;
+}
+[System.Serializable]
+public class DestroyAllObstaclesCondition : WinCondition
+{
 }

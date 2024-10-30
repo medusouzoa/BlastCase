@@ -7,11 +7,16 @@
         "thresholdC": 7,
         "obstacleCount": 4,
         "moveLimit": 30,
-        "colors": [
-            1,
-            2,
-            3,
-            4
+        "colors": [ 1, 2, 3, 4 ],
+        "winConditions": [
+            {
+                "type": "destroyAllObstacles"
+            },
+            {
+                "type": "collectPieces",
+                "quantity": 20,
+                "color": 1
+            }
         ],
         "obstacleCoordinates": [
             {
